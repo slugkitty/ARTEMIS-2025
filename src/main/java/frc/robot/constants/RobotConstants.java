@@ -11,6 +11,4 @@ public class RobotConstants {
     public static final double kIInOut = 0.0;
     public static final double kDInOut = 0.0;
     public static final int InOutMotorDeviceID = 11;
-
-    public static final String myString = "The variable is so cool";
 }
