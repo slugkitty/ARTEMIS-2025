@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.algaeSubsystem;
+import frc.robot.subsystems.climberSubsystem;
 import frc.robot.subsystems.coralSubsystem;
 import frc.robot.subsystems.elevatorSubsystem;
 import frc.robot.subsystems.inOutSubsystem;
@@ -43,6 +44,7 @@ public class RobotContainer {
     public static final coralSubsystem coral = new coralSubsystem();
     public static final elevatorSubsystem elevator  = new elevatorSubsystem();
     public static final inOutSubsystem inOut  = new inOutSubsystem();
+    public static final climberSubsystem climber = new climberSubsystem();
 
     public RobotContainer() {
         configureBindings();
@@ -89,6 +91,9 @@ public class RobotContainer {
 
         joystick.button(5).whileTrue(coral.coralCommand(0.2));
         joystick.button(6).whileTrue(coral.coralCommand(-0.2));
+
+        joystick.button(9).whileTrue(climber.climberCommand(0.4));
+        joystick.button(10).whileTrue(climber.climberCommand(-0.4));
 
 
         // joystick.button(9).whileTrue(elevator.elevatorCommand(30));
