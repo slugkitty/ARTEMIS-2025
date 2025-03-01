@@ -66,7 +66,7 @@ public class TunerConstants {
     private static final Pigeon2Configuration pigeonConfigs = null;
 
     // CAN bus that the devices are located on, all swerve devices on same bus
-    public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
+    public static final CANBus kCANBus = new CANBus("5876", "./logs/example.hoot");
 
     // Theoretical free speed (m/s) at 12 V applied output, tuned to robot
     // TODO: Change

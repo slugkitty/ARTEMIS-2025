@@ -11,20 +11,23 @@ import com.revrobotics.RelativeEncoder;
 import frc.robot.constants.RobotConstants;
 
 public class elevatorSubsystem extends SubsystemBase {
-    public PIDController pid = new PIDController(RobotConstants.kPInOut, RobotConstants.kIInOut, RobotConstants.kDInOut);
+    public PIDController pid = new PIDController(RobotConstants.kPInOutE, RobotConstants.kIInOutE, RobotConstants.kDInOutE);
     private SparkMax elevatorMotor = new SparkMax(RobotConstants.elevatorDeviceID, MotorType.kBrushless);
     private RelativeEncoder elevatorEncoder = elevatorMotor.getEncoder();
 
     public double setpoint = 0;
 
+    public double motorValueHere;
+
     public elevatorSubsystem() {}
 
     @Override 
     public void periodic() {
-        SmartDashboard.putNumber("Set point", setpoint);
-        SmartDashboard.putNumber("Encoder Reading",elevatorEncoder.getPosition());
+        SmartDashboard.putNumber("Set point E", setpoint);
+        SmartDashboard.putNumber("Encoder Reading E", getPosition());
         setMotor(0.0);
         toPID(setpoint);
+        SmartDashboard.putNumber("Elevator PID Motor Value", motorValueHere);
     }
 
     private void setMotor(double speed) {
@@ -33,7 +36,8 @@ public class elevatorSubsystem extends SubsystemBase {
 
     private double getPosition(){
         //need to aassign this to a vlue that you return
-        double distance = elevatorEncoder.getPosition() * 13 * 42 * 10;
+        //double distance = elevatorEncoder.getPosition() * 13 * 42 * 10;
+        double distance = -elevatorEncoder.getPosition();
         // motor.get position * number
         return distance;
        // return distance (in cm or m)
@@ -42,22 +46,27 @@ public class elevatorSubsystem extends SubsystemBase {
     private void toPID(double setpoint) {
         double kFFValue = Math.cos(((90 - getPosition())*(Math.PI/180))) * 0.05;
         
-        double motorValue = (pid.calculate(getPosition(), setpoint) + kFFValue);
-        if (motorValue < -0.1) {
-            motorValue = -0.1;
+        double motorValue = ((pid.calculate(getPosition(), setpoint) + kFFValue) * 10); //temp please what
+        if (motorValue < -0.2) {
+            motorValue = -0.2;
         }
-        if (motorValue > 0.1) {
-            motorValue = 0.1;
+        if (motorValue > 0.2) {
+            motorValue = 0.;
         }
-        elevatorMotor.set(motorValue);
+        //elevatorMotor.set(motorValue);
+
+        motorValueHere = motorValue;
     }
     
     private void iterateSetPoint(boolean direction) {
         if (direction){
             setpoint++;
+            elevatorMotor.set(-0.4);
         }
         else{
             setpoint--;
+            elevatorMotor.set(+0.4);
+            // this was up
         }
     }
 

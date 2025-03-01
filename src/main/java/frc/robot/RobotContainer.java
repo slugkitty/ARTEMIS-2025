@@ -52,23 +52,22 @@ public class RobotContainer {
     private final CommandJoystick joystick = new CommandJoystick(0);
     private final CommandJoystick joystick2 = new CommandJoystick(1);
 
-
     public static final CommandSwerveDrivetrain drivetrain = new CommandSwerveDrivetrain(
         TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight
     );
 
     public static final algaeSubsystem algae = new algaeSubsystem();
-    public static final coralSubsystem coral = new coralSubsystem();
+    //public static final coralSubsystem coral = new coralSubsystem();
     public static final elevatorSubsystem elevator  = new elevatorSubsystem();
     public static final inOutSubsystem inOut  = new inOutSubsystem();
     public static final climberSubsystem climber = new climberSubsystem();
 
-    private final SendableChooser<Command> autoChooser;
+    //private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        //autoChooser.addOption("Auto1", autoOne());
-        SmartDashboard.putData("Auto Mode", autoChooser);
+        //autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        // //autoChooser.addOption("Auto1", autoOne());
+        // SmartDashboard.putData("Auto Mode", autoChooser);
         configureBindings();
     }
 
@@ -103,23 +102,27 @@ public class RobotContainer {
         joystick.button(1).whileTrue(inOut.inOutManual(true));
         joystick.button(2).whileTrue(inOut.inOutManual(false));
 
-        joystick.button(3).whileTrue(elevator.elevatorManual(true));
-        joystick.button(4).whileTrue(elevator.elevatorManual(false));
+       // joystick.button(3).whileTrue(elevator.elevatorManual(true));
+        //joystick.button(4).whileTrue(elevator.elevatorManual(false));
 
         //NOT MANUAL for operator (on joystick2)
        // while( joystick2.getRawAxis(1) > 0.2){ 
        // make proportional to joystick value
-        while( joystick2.getRawAxis(2) > 0.2){  //should be Left Axis point towards Y direction
-            algae.algaeCommand(0.4);
-        }
+        // if(Math.abs(joystick2.getRawAxis(1)) > 0.2){  //should be Left Axis point towards Y direction
+        //     algae.algaeCommand(0.4*joystick2.getRawAxis(2));
+        // }
 
-        while( joystick2.getRawAxis(3) > 0.2){ //Left Trigger
-            coral.coralCommand(0.4);
-        }
+        joystick2.axisMagnitudeGreaterThan(1, 0.2).whileTrue(algae.algaeCommand(0.4*joystick2.getRawAxis(2)));
 
-        while( joystick2.getRawAxis(4) > 0.2){ //Right Trigger
-            coral.coralCommand(-0.4);
-        }
+        // while( joystick2.getRawAxis(2) > 0.2){ //Left Trigger
+        //     coral.coralCommand(0.4);
+        // }
+
+        // while( joystick2.getRawAxis(3) > 0.2){ //Right Trigger
+        //     coral.coralCommand(-0.4);
+        // }
+
+        //joystick2.button(1).whileTrue(algae.algaeCommand(0.4));
 
         joystick2.button(4).onTrue(inOut.inOutCommand(-45)); //Y
         joystick2.button(2).onTrue(inOut.inOutCommand(0)); //B
@@ -130,11 +133,11 @@ public class RobotContainer {
         joystick2.button(5).whileTrue(climber.climberCommand(0.4)); //Left Button
         joystick2.button(6).whileTrue(climber.climberCommand(-0.4)); //Right Button
 
-        joystick2.povUp().onTrue(elevator.elevatorCommand(45)); //POV Up
-        joystick2.povDown().onTrue(elevator.elevatorCommand(0)); //POV Down
+        // joystick2.povUp().onTrue(elevator.elevatorCommand(45)); //POV Up
+        // joystick2.povDown().onTrue(elevator.elevatorCommand(0)); //POV Down
 
-        // joystick.button(9).whileTrue(elevator.elevatorCommand(30));
-        // joystick.button(10).whileTrue(elevator.elevatorCommand(-30));
+        joystick.povUp().whileTrue(elevator.elevatorManual(true));
+        joystick.povDown().whileTrue(elevator.elevatorManual(false));
 
         // reset the field-centric heading on START
         joystick.button(8).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -152,36 +155,36 @@ public class RobotContainer {
 
     // AUTOS
 
-    public Command AutoOne(){
-        return Commands.sequence(
-            driveTo(drivetrain.getPose(), 0,0,0)
-        );
-    }
+    // public Command AutoOne(){
+    //     return Commands.sequence(
+    //         driveTo(drivetrain.getPose(), 0,0,0)
+    //     );
+    // }
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
-        //return Commands.print("No autonomous command configured");
-        return autoChooser.getSelected();
+        return Commands.print("No autonomous command configured");
+        //return autoChooser.getSelected();
     }   
     
-    public Command driveTo(Pose2d currentPos, double x, double y, int degrees){      
-        // The rotation component in these poses represents the direction of travel
-        Pose2d startPos = new Pose2d(currentPos.getTranslation(), new Rotation2d());
-        Pose2d endPos = new Pose2d(currentPos.getTranslation().plus(new Translation2d(x, y)), new Rotation2d(degrees* (Math.PI/180)));
+    // public Command driveTo(Pose2d currentPos, double x, double y, int degrees){      
+    //     // The rotation component in these poses represents the direction of travel
+    //     Pose2d startPos = new Pose2d(currentPos.getTranslation(), new Rotation2d());
+    //     Pose2d endPos = new Pose2d(currentPos.getTranslation().plus(new Translation2d(x, y)), new Rotation2d(degrees* (Math.PI/180)));
 
-        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(startPos, endPos);
-        PathPlannerPath path = new PathPlannerPath(
-            waypoints, 
-            new PathConstraints(
-            4.0, 4.0, 
-            Units.degreesToRadians(360), Units.degreesToRadians(540)
-            ),
-            null, // Ideal starting state can be null for on-the-fly paths
-            new GoalEndState(0.0, endPos.getRotation())
-        );
-        // Prevent this path from being flipped on the red alliance, since the given positions are already correct
-        path.preventFlipping = true;
+    //     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(startPos, endPos);
+    //     PathPlannerPath path = new PathPlannerPath(
+    //         waypoints, 
+    //         new PathConstraints(
+    //         4.0, 4.0, 
+    //         Units.degreesToRadians(360), Units.degreesToRadians(540)
+    //         ),
+    //         null, // Ideal starting state can be null for on-the-fly paths
+    //         new GoalEndState(0.0, endPos.getRotation())
+    //     );
+    //     // Prevent this path from being flipped on the red alliance, since the given positions are already correct
+    //     path.preventFlipping = true;
 
-        return AutoBuilder.followPath(path);
-    }
+    //     return AutoBuilder.followPath(path);
+    // }
 }

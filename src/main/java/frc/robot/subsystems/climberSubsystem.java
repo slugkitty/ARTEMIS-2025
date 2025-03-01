@@ -4,10 +4,13 @@ import frc.robot.constants.RobotConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import edu.wpi.first.wpilibj2.command.Command;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+
 
 public class climberSubsystem extends SubsystemBase {
 
-    private TalonFXS climbermotor = new TalonFXS(RobotConstants.climberDeviceID);
+    private TalonSRX climbermotor = new TalonSRX(RobotConstants.climberDeviceID);    
 
     public climberSubsystem() {
         setDefaultCommand(run(() -> {
@@ -16,7 +19,7 @@ public class climberSubsystem extends SubsystemBase {
     }
 
     public void setMotor(double speed) {
-        climbermotor.set(speed);
+        climbermotor.set(climbermotor.getControlMode(), speed);
     }
 
     @Override

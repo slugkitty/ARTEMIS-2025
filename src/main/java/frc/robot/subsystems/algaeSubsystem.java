@@ -18,9 +18,9 @@ public class algaeSubsystem extends SubsystemBase {
     private final I2C.Port i2cPort = I2C.Port.kOnboard;
 
     private SparkMax algaeMotorLeft = new SparkMax(RobotConstants.algaeDeviceID1, MotorType.kBrushed);
-    private SparkMax algaeMotorRight = new SparkMax(RobotConstants.algaeDeviceID2, MotorType.kBrushed);
+    private SparkMax algaeMotorRight = new SparkMax(RobotConstants.algaeDeviceID2, MotorType.kBrushed);    
 
-    private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
+   // private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
     
     //TRigger for when the algae is in the intake
     public Trigger proximitySensorTrigger;
@@ -29,29 +29,30 @@ public class algaeSubsystem extends SubsystemBase {
     // Creates trigger based on algaeBoolean function
     public algaeSubsystem() {
         setDefaultCommand(run(() -> {
-            //setMotor(0.0);
+            setMotor(0.0);
         }));
-        proximitySensorTrigger = new Trigger(this::algaeBoolean);
+        //proximitySensorTrigger = new Trigger(this::algaeBoolean);
     }
 
     @Override
     public void periodic() {
+        setMotor(0.0);
     }
 
     public void setMotor(double speed) {
-        algaeMotorLeft.set(speed);
-        algaeMotorRight.set(-speed);
+        algaeMotorLeft.set(-speed);
+        algaeMotorRight.set(speed); //negative
     }
 
     // Determines algae distance from sensor
-    public boolean algaeBoolean() {
-        if (m_colorSensor.getProximity() >= 500){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
+    // public boolean algaeBoolean() {
+    //     if (m_colorSensor.getProximity() >= 500){
+    //         return true;
+    //     }
+    //     else {
+    //         return false;
+    //     }
+    // }
 
     public Command algaeCommand(double speed) {
         return this.run(() -> setMotor(speed));

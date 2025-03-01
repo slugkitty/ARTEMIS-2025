@@ -12,7 +12,7 @@ import frc.robot.Robot;
 import frc.robot.constants.RobotConstants;
 
 public class coralSubsystem extends SubsystemBase {
-    private SparkMax coralMotor = new SparkMax(RobotConstants.coralDeviceID, MotorType.kBrushed);
+    private SparkMax coralMotor = new SparkMax(RobotConstants.coralwheelDeviceID, MotorType.kBrushed);
     //private final boolean open;
 
     public coralSubsystem() {

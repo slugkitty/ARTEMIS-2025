@@ -18,7 +18,7 @@ public class inOutSubsystem extends SubsystemBase {
     public double setpoint = 0;
 
     public inOutSubsystem() {
-        config.smartCurrentLimit(RobotConstants.coralCurrentLimit);
+        config.smartCurrentLimit(RobotConstants.inOutCurrentLimit);
         inOutMotor.configure(config, null, null);
     }
 
