@@ -1,65 +1,75 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
-//import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.constants.TunerConstants;
-
-import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import frc.robot.constants.RobotConstants;
 
 public class elevatorSubsystem extends SubsystemBase {
-    // public double kP = 0.3;
-    // public double kI = 0.0;
-    // public double kD = 0.005;
-    // public PIDController pid = new PIDController(kP, kI, kD);
-    // Encoder encoderLift = new Encoder(4,5);
-    // encoderLift.setMinRate(2);
-    // encoderLift.setReverseDirection(false);
-    // encoderLift.setDistancePerPulse(Constants.Pivot_Encoder_Scale_Factor);
-    // encoderLift.setSamplesToAverage(5);
-    // private SparkMax elevatorMotor = new SparkMax(0, MotorType.kBrushless);
-    // Encoder encoderLift = new Encoder(4,5);
-    // public static double setpoint = 0;
+    public PIDController pid = new PIDController(RobotConstants.kPInOut, RobotConstants.kIInOut, RobotConstants.kDInOut);
+    private SparkMax elevatorMotor = new SparkMax(RobotConstants.elevatorDeviceID, MotorType.kBrushless);
+    private RelativeEncoder elevatorEncoder = elevatorMotor.getEncoder();
 
+    public double setpoint = 0;
 
-    // public elevatorSubsystem() {
-    // }
+    public elevatorSubsystem() {}
 
-    // // what is the motor value
-    // // if motor value isn't hte speed of hte motor, how do i set the setpoint along side the speed of hte motor
-    // //also how do i import a NEO motor
+    @Override 
+    public void periodic() {
+        SmartDashboard.putNumber("Set point", setpoint);
+        SmartDashboard.putNumber("Encoder Reading",elevatorEncoder.getPosition());
+        setMotor(0.0);
+        toPID(setpoint);
+    }
 
-    // @Override
-    // public void periodic() {
-    //     PIDArm();
-    //     toPID(setpoint);
-    // }
-    //     public static void incrementAngle(double increment) {
-    //         setpoint += increment;
-    //     }
-    //     public void toPID(double setpoint){
-    //         double kFFValue = Math.cos(((90 - encoderLift.getDistance())*(Math.PI/180))) * 0.05;
-            
-    //         double motorValue = pid.calculate(encoderLift.getDistance(), setpoint) + kFFValue;
-    //         if (motorValue < -0.5) {
-    //           motorValue = -0.5;
-    //         }
-    //         if (motorValue > 0.5) {
-    //           motorValue = 0.5;
-    //         }
-    //         elevatorMotor.set(motorValue);
-    //     }
-     
+    private void setMotor(double speed) {
+        elevatorMotor.set(speed);
+    }
 
-    // public Command elevatorCommand(double setpoint) {
-    //     return this.runOnce(() -> setMotor(setpoint));
-    // }
+    private double getPosition(){
+        //need to aassign this to a vlue that you return
+        double distance = elevatorEncoder.getPosition() * 13 * 42 * 10;
+        // motor.get position * number
+        return distance;
+       // return distance (in cm or m)
+    }
+
+    private void toPID(double setpoint) {
+        double kFFValue = Math.cos(((90 - getPosition())*(Math.PI/180))) * 0.05;
+        
+        double motorValue = (pid.calculate(getPosition(), setpoint) + kFFValue);
+        if (motorValue < -0.1) {
+            motorValue = -0.1;
+        }
+        if (motorValue > 0.1) {
+            motorValue = 0.1;
+        }
+        elevatorMotor.set(motorValue);
+    }
+    
+    private void iterateSetPoint(boolean direction) {
+        if (direction){
+            setpoint++;
+        }
+        else{
+            setpoint--;
+        }
+    }
+
+    private void setPosition(double position) {
+        setpoint = position;
+    }
+
+    public Command elevatorCommand(double position) {
+        return this.runOnce(() -> setPosition(position));
+    }
+
+    public Command elevatorManual(boolean direction) {
+        return this.run(() -> iterateSetPoint(direction));
+    }
 }

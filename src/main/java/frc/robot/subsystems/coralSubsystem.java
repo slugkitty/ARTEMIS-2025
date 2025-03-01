@@ -12,14 +12,10 @@ import frc.robot.Robot;
 import frc.robot.constants.RobotConstants;
 
 public class coralSubsystem extends SubsystemBase {
-    private SparkMaxConfig config = new SparkMaxConfig();
-    private SparkMax coralMotor = new SparkMax(RobotConstants.coralMotorDeviceID, MotorType.kBrushed);
-
+    private SparkMax coralMotor = new SparkMax(RobotConstants.coralDeviceID, MotorType.kBrushed);
     //private final boolean open;
 
     public coralSubsystem() {
-        config.smartCurrentLimit(RobotConstants.coralMotorCurrentLimit);
-        coralMotor.configure(config, null, null);
         setDefaultCommand(run(() -> {
             setMotor(0.0);
         }));

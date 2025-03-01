@@ -5,17 +5,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import frc.robot.constants.RobotConstants;
 
 public class inOutSubsystem extends SubsystemBase {
     public PIDController pid = new PIDController(RobotConstants.kPInOut, RobotConstants.kIInOut, RobotConstants.kDInOut);
-    private SparkMax inOutMotor = new SparkMax(RobotConstants.InOutMotorDeviceID, MotorType.kBrushless);
+    private SparkMax inOutMotor = new SparkMax(RobotConstants.inOutDeviceID, MotorType.kBrushless);
+    private SparkMaxConfig config = new SparkMaxConfig();
     private RelativeEncoder inOutEncoder = inOutMotor.getEncoder();
     public double setpoint = 0;
 
-    public inOutSubsystem() {}
+    public inOutSubsystem() {
+        config.smartCurrentLimit(RobotConstants.coralCurrentLimit);
+        inOutMotor.configure(config, null, null);
+    }
 
     @Override 
     public void periodic() {
