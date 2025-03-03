@@ -51,11 +51,11 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    // private final CommandJoystick driverJoystick = new CommandJoystick(0);
-    // private final CommandJoystick operatorJoystick = new CommandJoystick(1);
+    private final CommandJoystick driverJoystick = new CommandJoystick(0);
+    private final CommandJoystick operatorJoystick = new CommandJoystick(1);
 
-    private final CommandPS5Controller driverJoystick = new CommandPS5Controller(0);
-    private final CommandPS5Controller operatorJoystick = new CommandPS5Controller(0);
+    // private final CommandPS5Controller driverJoystick = new CommandPS5Controller(0);
+    // private final CommandPS5Controller operatorJoystick = new CommandPS5Controller(0);
 
     public static final CommandSwerveDrivetrain drivetrain = new CommandSwerveDrivetrain(
         TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight
