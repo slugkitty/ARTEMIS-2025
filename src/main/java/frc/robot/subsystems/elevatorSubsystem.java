@@ -16,18 +16,20 @@ public class elevatorSubsystem extends SubsystemBase {
     private RelativeEncoder elevatorEncoder = elevatorMotor.getEncoder();
 
     public double setpoint = 0;
-
     public double motorValueHere;
+    public double pidkFFValue;
 
     public elevatorSubsystem() {}
 
     @Override 
     public void periodic() {
-        SmartDashboard.putNumber("Set point E", setpoint);
-        SmartDashboard.putNumber("Encoder Reading E", getPosition());
+        SmartDashboard.putNumber("Elevator Set point", setpoint);
+        SmartDashboard.putNumber("Elevator Encoder Reading", getPosition());
+        SmartDashboard.putNumber("Elevator PID Motor Value", motorValueHere);
+        SmartDashboard.putNumber("Elevator Pid kFF Value", pidkFFValue);
+        
         setMotor(0.0);
         toPID(setpoint);
-        SmartDashboard.putNumber("Elevator PID Motor Value", motorValueHere);
     }
 
     private void setMotor(double speed) {
@@ -37,46 +39,47 @@ public class elevatorSubsystem extends SubsystemBase {
     private double getPosition(){
         //need to aassign this to a vlue that you return
         //double distance = elevatorEncoder.getPosition() * 13 * 42 * 10;
-        double distance = -elevatorEncoder.getPosition();
-        // motor.get position * number
-        return distance;
-       // return distance (in cm or m)
+        double distance = -elevatorEncoder.getPosition(); //negative?
+        return distance;   // return distance (in cm or m)
     }
 
     private void toPID(double setpoint) {
         double kFFValue = Math.cos(((90 - getPosition())*(Math.PI/180))) * 0.05;
         
-        double motorValue = ((pid.calculate(getPosition(), setpoint) + kFFValue) * 10); //temp please what
+        pidkFFValue = kFFValue;
+
+        double motorValue = ((pid.calculate(getPosition(), setpoint) + kFFValue)); //temp please what
+
+        motorValueHere = motorValue;
+
         if (motorValue < -0.2) {
             motorValue = -0.2;
         }
         if (motorValue > 0.2) {
             motorValue = 0.;
         }
-        //elevatorMotor.set(motorValue);
-
-        motorValueHere = motorValue;
+        elevatorMotor.set(motorValue);
     }
     
     private void iterateSetPoint(boolean direction) {
         if (direction){
             setpoint++;
-            elevatorMotor.set(-0.4);
+            //elevatorMotor.set(-0.4);
         }
         else{
             setpoint--;
-            elevatorMotor.set(+0.4);
+            //elevatorMotor.set(+0.4);
             // this was up
         }
     }
 
-    private void setPosition(double position) {
-        setpoint = position;
-    }
+    // private void setSetpoint(double position) {
+    //     setpoint = position;
+    // }
 
-    public Command elevatorCommand(double position) {
-        return this.runOnce(() -> setPosition(position));
-    }
+    // public Command elevatorCommand(double position) {
+    //     return this.runOnce(() -> setSetpoint(position));
+    // }
 
     public Command elevatorManual(boolean direction) {
         return this.run(() -> iterateSetPoint(direction));

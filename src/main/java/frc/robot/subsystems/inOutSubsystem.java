@@ -15,7 +15,11 @@ public class inOutSubsystem extends SubsystemBase {
     private SparkMax inOutMotor = new SparkMax(RobotConstants.inOutDeviceID, MotorType.kBrushless);
     private SparkMaxConfig config = new SparkMaxConfig();
     private RelativeEncoder inOutEncoder = inOutMotor.getEncoder();
+   
     public double setpoint = 0;
+    public double pidMotorValue;
+    public double pidkFFValue;
+
 
     public inOutSubsystem() {
         config.smartCurrentLimit(RobotConstants.inOutCurrentLimit);
@@ -24,9 +28,12 @@ public class inOutSubsystem extends SubsystemBase {
 
     @Override 
     public void periodic() {
-        SmartDashboard.putNumber("Set point", setpoint);
-        SmartDashboard.putNumber("Current Angle", motorAngle());
-        SmartDashboard.putNumber("Encoder Reading",inOutEncoder.getPosition());
+        SmartDashboard.putNumber("InOut Set point", setpoint);
+        SmartDashboard.putNumber("InOut Current Angle", motorAngle());
+        SmartDashboard.putNumber("InOut Encoder Reading",inOutEncoder.getPosition());
+        SmartDashboard.putNumber("InOut Pid Defined Motor Value", pidMotorValue);
+        SmartDashboard.putNumber("InOut Pid kFF Value", pidkFFValue);
+
         setMotor(0.0);
         toPID(setpoint);
     }
@@ -39,7 +46,11 @@ public class inOutSubsystem extends SubsystemBase {
     private void toPID(double setpoint) {
         double kFFValue = Math.cos(((90 - motorAngle())*(Math.PI/180))) * 0.05;
         
+        pidkFFValue = kFFValue;
+        
         double motorValue = (pid.calculate(motorAngle(), setpoint) + kFFValue);
+
+        pidMotorValue = motorValue;
         if (motorValue < -0.1) {
             motorValue = -0.1;
         }

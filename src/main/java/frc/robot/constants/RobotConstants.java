@@ -21,7 +21,7 @@ public class RobotConstants {
     public static final double kIInOut = 0.0;
     public static final double kDInOut = 0.0;
 
-    public static final double kPInOutE = 0.0;
+    public static final double kPInOutE = 0.01;
     public static final double kIInOutE = 0.0;
     public static final double kDInOutE = 0.0;
 

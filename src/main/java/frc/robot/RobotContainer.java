@@ -11,11 +11,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.TunerConstants;
@@ -49,15 +51,18 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandJoystick joystick = new CommandJoystick(0);
-    private final CommandJoystick joystick2 = new CommandJoystick(1);
+    // private final CommandJoystick driverJoystick = new CommandJoystick(0);
+    // private final CommandJoystick operatorJoystick = new CommandJoystick(1);
+
+    private final CommandPS5Controller driverJoystick = new CommandPS5Controller(0);
+    private final CommandPS5Controller operatorJoystick = new CommandPS5Controller(0);
 
     public static final CommandSwerveDrivetrain drivetrain = new CommandSwerveDrivetrain(
         TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight
     );
 
     public static final algaeSubsystem algae = new algaeSubsystem();
-    //public static final coralSubsystem coral = new coralSubsystem();
+    public static final coralSubsystem coral = new coralSubsystem();
     public static final elevatorSubsystem elevator  = new elevatorSubsystem();
     public static final inOutSubsystem inOut  = new inOutSubsystem();
     public static final climberSubsystem climber = new climberSubsystem();
@@ -75,14 +80,14 @@ public class RobotContainer {
         // Drivetrain
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getRawAxis(1) * 0.2) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getRawAxis(0) * 0.2) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRawAxis(4) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driverJoystick.getRawAxis(1) * 0.2) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverJoystick.getRawAxis(0) * 0.2) // Drive left with negative X (left)
+                    .withRotationalRate(-driverJoystick.getRawAxis(4) * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
-        joystick.button(3).whileTrue(drivetrain.applyRequest(() -> brake)); //Y
-        joystick.button(2).whileTrue(drivetrain.applyRequest(() -> // B
-            point.withModuleDirection(new Rotation2d(-joystick.getRawAxis(1), -joystick.getRawAxis(0)))
+        driverJoystick.button(3).whileTrue(drivetrain.applyRequest(() -> brake)); //Y
+        driverJoystick.button(2).whileTrue(drivetrain.applyRequest(() -> // B
+            point.withModuleDirection(new Rotation2d(-driverJoystick.getRawAxis(1), -driverJoystick.getRawAxis(0)))
         ));
 
         // joystick.x().onTrue(
@@ -96,60 +101,46 @@ public class RobotContainer {
         //             coralCommand.runCommand())
         //         .withName("Coral"));
 
-        // algae.proximitySensorTrigger.whileTrue(algae.algaeCommand(-0.2));
+        // TODO: Figure out how to make this work
+        //joystick.axisMagnitudeGreaterThan(5, 0.2).whileTrue(algae.algaeCommand(0.4, -1));
+        
+        // ALGAE
+        operatorJoystick.axisGreaterThan(1, 0.2).whileTrue(algae.algaeCommand(0.4));
+        operatorJoystick.axisLessThan(1, -0.2).whileTrue(algae.algaeCommand(-0.4));
 
-        //MANUAL(on joystick1)
-        joystick.button(1).whileTrue(inOut.inOutManual(true));
-        joystick.button(2).whileTrue(inOut.inOutManual(false));
+        // CORAL
+        operatorJoystick.axisGreaterThan(5, 0.2).whileTrue(coral.coralCommand(0.4));
+        operatorJoystick.axisLessThan(5, -0.2).whileTrue(coral.coralCommand(-0.4));
 
-       // joystick.button(3).whileTrue(elevator.elevatorManual(true));
-        //joystick.button(4).whileTrue(elevator.elevatorManual(false));
+        // IN OUT
+        operatorJoystick.button(4).whileTrue(inOut.inOutCommand(-45)); //Y
+        operatorJoystick.button(3).whileTrue(inOut.inOutCommand(0)); //B
 
-        //NOT MANUAL for operator (on joystick2)
-       // while( joystick2.getRawAxis(1) > 0.2){ 
-       // make proportional to joystick value
-        // if(Math.abs(joystick2.getRawAxis(1)) > 0.2){  //should be Left Axis point towards Y direction
-        //     algae.algaeCommand(0.4*joystick2.getRawAxis(2));
-        // }
+        driverJoystick.button(1).whileTrue(inOut.inOutManual(true));
+        driverJoystick.button(2).whileTrue(inOut.inOutManual(false));
 
-        joystick2.axisMagnitudeGreaterThan(1, 0.2).whileTrue(algae.algaeCommand(0.4*joystick2.getRawAxis(2)));
+        // CLIMBER
+        operatorJoystick.button(5).whileTrue(climber.climberCommand(0.4)); //Left Button
+        operatorJoystick.button(6).whileTrue(climber.climberCommand(-0.4)); //Right Button
 
-        // while( joystick2.getRawAxis(2) > 0.2){ //Left Trigger
-        //     coral.coralCommand(0.4);
-        // }
+        // ELEVATOR
+        // operatorJoystick.povUp().onTrue(elevator.elevatorCommand(45)); //POV Up
+        // operatorJoystick.povDown().onTrue(elevator.elevatorCommand(0)); //POV Down
 
-        // while( joystick2.getRawAxis(3) > 0.2){ //Right Trigger
-        //     coral.coralCommand(-0.4);
-        // }
-
-        //joystick2.button(1).whileTrue(algae.algaeCommand(0.4));
-
-        joystick2.button(4).onTrue(inOut.inOutCommand(-45)); //Y
-        joystick2.button(2).onTrue(inOut.inOutCommand(0)); //B
-
-        //joystick2.button(1).whileTrue(coral.coralCommand(0.2));
-        //joystick2.button(2).whileTrue(coral.coralCommand(-0.2));
-
-        joystick2.button(5).whileTrue(climber.climberCommand(0.4)); //Left Button
-        joystick2.button(6).whileTrue(climber.climberCommand(-0.4)); //Right Button
-
-        // joystick2.povUp().onTrue(elevator.elevatorCommand(45)); //POV Up
-        // joystick2.povDown().onTrue(elevator.elevatorCommand(0)); //POV Down
-
-        joystick.povUp().whileTrue(elevator.elevatorManual(true));
-        joystick.povDown().whileTrue(elevator.elevatorManual(false));
+        driverJoystick.povUp().whileTrue(elevator.elevatorManual(true));
+        driverJoystick.povDown().whileTrue(elevator.elevatorManual(false));
 
         // reset the field-centric heading on START
-        joystick.button(8).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driverJoystick.button(8).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // driverJoystick.back().and(driverJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // driverJoystick.back().and(driverJoystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // driverJoystick.start().and(driverJoystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // driverJoystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
     }
 
 
